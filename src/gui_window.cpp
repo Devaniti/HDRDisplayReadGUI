@@ -488,7 +488,18 @@ void GUIWindow::RenderImGui()
     }
     case MeasurementState::CheckingInstrument:
         ImGui::Text("Checking instrument...");
-        m_MeasurementManagerInstrumentCheck.Update();
+        if (m_MeasurementManagerInstrumentCheck.Update())
+        {
+            if (!IsInstrumentCheckMeasurementsGood())
+            {
+                TransitionToAnotherState(MeasurementState::ReadyForMeasurement);
+                m_LastError = "Instrument check failed: unexpected readings, make sure that "
+                              "instrument is correctly placed and in measurement position and that "
+                              "\"Night Light\" Windows feature is disabled";
+                break;
+            }
+        }
+
         if (InstrumentManager::GetInstance().GetStatus() == InstrumentStatus::NeedsUserInput)
         {
             TransitionToAnotherState(MeasurementState::ReadyToStartInstrument);
@@ -513,7 +524,8 @@ void GUIWindow::RenderImGui()
             {
                 TransitionToAnotherState(MeasurementState::ReadyForMeasurement);
                 m_LastError = "Instrument check failed: unexpected readings, make sure that "
-                              "instrument is correctly placed and in measurement position";
+                              "instrument is correctly placed and in measurement position and that "
+                              "\"Night light\" Windows feature is disabled";
                 break;
             }
 
@@ -732,6 +744,7 @@ void GUIWindow::MoveToDisplay(int displayIndex)
 std::vector<MeasurementPatch> GUIWindow::GetInstrumentCheckPatches()
 {
     std::vector<MeasurementPatch> result{
+        {.WindowSize = 0.01f, .HDR10R = 520, .HDR10G = 520, .HDR10B = 520},
         {.WindowSize = 0.01f, .HDR10R = 0, .HDR10G = 0, .HDR10B = 0},
         {.WindowSize = 0.01f, .HDR10R = 1023, .HDR10G = 1023, .HDR10B = 1023},
         {.WindowSize = 0.01f, .HDR10R = 1023, .HDR10G = 0, .HDR10B = 0},
@@ -744,48 +757,129 @@ std::vector<MeasurementPatch> GUIWindow::GetInstrumentCheckPatches()
 
 bool GUIWindow::IsInstrumentCheckMeasurementsGood()
 {
-    // Check is *very* generous to display and intstrument precision
-    // We just want to make sure that instrument is properly set up to measure display
+    // We want to make sure that instrument is both properly set up to measure display
+    // And that Windows does not mess up our results with stuff like "Night Light"
     const std::vector<XYZValue>& measurements =
         m_MeasurementManagerInstrumentCheck.GetMeasurements();
 
-    // Check black patches
-    if ((measurements[0].Y > 15.0f) || (measurements[5].Y > 15.0f))
-    {
-        return false;
-    }
-    // No more than 5 nits difference between black measurements
-    if (std::abs(measurements[0].Y - measurements[5].Y) > 5.0f)
-    {
-        return false;
-    }
+    constexpr float whiteTargetX = 0.3127f;
+    constexpr float whiteTargetY = 0.3290f;
+    constexpr float whiteAllowedDelta = 0.05f;
 
-    // Check white patches
-    if ((measurements[1].Y < 100.0f) || (measurements[6].Y < 100.0f))
+    int lastMeasurementIndex = measurements.size() - 1;
+    switch (lastMeasurementIndex)
     {
-        return false;
-    }
-    // No more than 5% diff between white measurements
-    if (std::abs(1.0f - measurements[1].Y / measurements[6].Y) > 0.05f)
-    {
-        return false;
-    }
+    case 0:
+        // 100nit white patch
+        {
+            const XYZValue& white100nit = measurements[0];
+            float w_x = white100nit.X / (white100nit.X + white100nit.Y + white100nit.Z);
+            float w_y = white100nit.Y / (white100nit.X + white100nit.Y + white100nit.Z);
+            if (white100nit.Y < 50.0f || white100nit.Y > 175.0f ||
+                std::abs(w_x - whiteTargetX) > whiteAllowedDelta ||
+                std::abs(w_y - whiteTargetY) > whiteAllowedDelta)
+            {
+                return false;
+            }
+            break;
+        }
+    case 1:
+        // 1st black patch
+        {
+            const XYZValue& black1 = measurements[1];
+            if (black1.Y > 15.0f)
+            {
+                return false;
+            }
+            break;
+        }
+    case 2:
+        // 1st 10000nit white patch
+        {
+            const XYZValue& white1 = measurements[2];
+            float w_x = white1.X / (white1.X + white1.Y + white1.Z);
+            float w_y = white1.Y / (white1.X + white1.Y + white1.Z);
+            if (white1.Y < 100.0f || std::abs(w_x - whiteTargetX) > whiteAllowedDelta ||
+                std::abs(w_y - whiteTargetY) > whiteAllowedDelta)
+            {
+                return false;
+            }
+            break;
+        }
+    case 3:
+        // Red measurement
+        {
+            const XYZValue& red = measurements[3];
+            float r_x = red.X / (red.X + red.Y + red.Z);
+            if ((r_x < 0.55f) || (red.Y < 26.0f))
+            {
+                return false;
+            }
+            break;
+        }
+    case 4:
+        // Green measurement
+        {
+            const XYZValue& green = measurements[4];
+            float g_y = green.Y / (green.X + green.Y + green.Z);
+            if ((g_y < 0.55f) || (green.Y < 68.0f))
+            {
+                return false;
+            }
+            break;
+        }
+    case 5:
+        // Blue measurement
+        {
+            const XYZValue& blue = measurements[5];
+            float b_x = blue.X / (blue.X + blue.Y + blue.Z);
+            float b_y = blue.Y / (blue.X + blue.Y + blue.Z);
+            if ((b_x > 0.22f) || (b_y > 0.13f) || (blue.Y < 6.0f))
+            {
+                return false;
+            }
+            break;
+        }
+    case 6:
+        // 2nd black patch
+        {
+            const XYZValue& black1 = measurements[1];
+            const XYZValue& black2 = measurements[6];
 
-    // RGB measurements
-    float r_x = measurements[2].X / (measurements[2].X + measurements[2].Y + measurements[2].Z);
-    if ((r_x < 0.3333f) || (measurements[2].Y < 26.0f))
-    {
-        return false;
-    }
-    float g_y = measurements[3].Y / (measurements[3].X + measurements[3].Y + measurements[3].Z);
-    if ((g_y < 0.3333f) || (measurements[3].Y < 68.0f))
-    {
-        return false;
-    }
-    float b_x = measurements[4].X / (measurements[4].X + measurements[4].Y + measurements[4].Z);
-    float b_y = measurements[4].Y / (measurements[4].X + measurements[4].Y + measurements[4].Z);
-    if ((b_x > 0.3333f) || (b_y > 0.3333f) || (measurements[2].Y < 6.0f))
-    {
+            if (black2.Y > 15.0f)
+            {
+                return false;
+            }
+
+            // No more than 5 nits difference between black measurements
+            if (std::abs(black1.Y - black2.Y) > 5.0f)
+            {
+                return false;
+            }
+            break;
+        }
+    case 7:
+        // 2nd 10000nit white patch
+        {
+            const XYZValue& white1 = measurements[2];
+            const XYZValue& white2 = measurements[7];
+            float w_x = white2.X / (white2.X + white2.Y + white2.Z);
+            float w_y = white2.Y / (white2.X + white2.Y + white2.Z);
+            if (white2.Y < 100.0f || std::abs(w_x - whiteTargetX) > whiteAllowedDelta ||
+                std::abs(w_y - whiteTargetY) > whiteAllowedDelta)
+            {
+                return false;
+            }
+
+            // No more than 5% diff between white measurements
+            if (std::abs(1.0f - white1.Y / white2.Y) > 0.05f)
+            {
+                return false;
+            }
+            break;
+        }
+    default:
+        HDRGUI_ASSERT(0);
         return false;
     }
 

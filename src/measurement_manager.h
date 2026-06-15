@@ -22,7 +22,7 @@ public:
     void RestartLastMeasurement();
 
     void Release();
-    void Update();
+    bool Update();
     bool IsRunning();
     bool IsError();
     std::string GetStatusString();

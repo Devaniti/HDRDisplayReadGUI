@@ -42,7 +42,7 @@ void MeasurementManager::Release()
     m_IsError = false;
 }
 
-void MeasurementManager::Update()
+bool MeasurementManager::Update()
 {
     InstrumentManager::GetInstance().Update();
 
@@ -50,7 +50,7 @@ void MeasurementManager::Update()
         (InstrumentManager::GetInstance().GetStatus() == InstrumentStatus::Measuring) ||
         (InstrumentManager::GetInstance().GetStatus() == InstrumentStatus::StartingUp))
     {
-        return;
+        return false;
     }
 
     m_IsMeasuring = false;
@@ -60,7 +60,7 @@ void MeasurementManager::Update()
     {
         m_IsRunning = false;
         m_IsError = true;
-        return;
+        return false;
     }
 
     if (InstrumentManager::GetInstance().IsLastMeasurementFailed())
@@ -77,7 +77,7 @@ void MeasurementManager::Update()
         {
             m_NeedDisplayNextPatch = true;
         }
-        return;
+        return false;
     }
     else
     {
@@ -94,6 +94,8 @@ void MeasurementManager::Update()
     {
         m_NeedDisplayNextPatch = true;
     }
+
+    return true;
 }
 
 bool MeasurementManager::IsRunning()
