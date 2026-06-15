@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 include_guard(GLOBAL)
 
-project(HDRMeasurementGUI)
+project(HDRDisplayReadGUI)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -46,20 +46,20 @@ add_custom_command(
                 ${CMAKE_CURRENT_SOURCE_DIR}/resources/open_source_licenses.txt
 )
 
-add_executable(HDRMeasurementGUI)
+add_executable(HDRDisplayReadGUI)
 
-set_target_properties(HDRMeasurementGUI PROPERTIES
+set_target_properties(HDRDisplayReadGUI PROPERTIES
     WIN32_EXECUTABLE TRUE
     VS_DPI_AWARE "PerMonitor"
 )
 
-target_link_libraries(HDRMeasurementGUI
+target_link_libraries(HDRDisplayReadGUI
         PRIVATE
         d3d11.lib
         dxgi.lib
 )
 
-target_sources(HDRMeasurementGUI
+target_sources(HDRDisplayReadGUI
         PRIVATE
         FILE_SET header_files TYPE HEADERS
         BASE_DIRS src
@@ -100,7 +100,7 @@ target_sources(HDRMeasurementGUI
         PRIVATE
         src/resource.rc
 
-        # HDRMeasurementGUI's source code
+        # HDRDisplayReadGUI's source code
         PRIVATE
         src/main.cpp
         src/embeds.cpp
@@ -121,11 +121,11 @@ set_source_files_properties(src/header_impl.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON
 )
 
-target_precompile_headers(HDRMeasurementGUI PRIVATE src/precompiled_header.h)
+target_precompile_headers(HDRDisplayReadGUI PRIVATE src/precompiled_header.h)
 
-target_include_directories(HDRMeasurementGUI PRIVATE
+target_include_directories(HDRDisplayReadGUI PRIVATE
         src
         external/imgui
 )
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT HDRMeasurementGUI)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT HDRDisplayReadGUI)

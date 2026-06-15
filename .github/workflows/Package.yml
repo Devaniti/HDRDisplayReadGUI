@@ -41,7 +41,7 @@ jobs:
         endpoint: https://eus.codesigning.azure.net/
         trusted-signing-account-name: dmytro-bulatov-sign
         certificate-profile-name: dmytro-bulatov
-        files: ${{ github.workspace }}/build/Release/HDRMeasurementGUI.exe
+        files: ${{ github.workspace }}/build/Release/HDRDisplayReadGUI.exe
         file-digest: SHA256
         timestamp-rfc3161: http://timestamp.acs.microsoft.com
         timestamp-digest: SHA256
@@ -61,4 +61,4 @@ jobs:
       with:
         name: RealFakeSDRDisplayInHDR - Package
         path: |
-          ./build/Release/HDRMeasurementGUI.exe
+          ./build/Release/HDRDisplayReadGUI.exe

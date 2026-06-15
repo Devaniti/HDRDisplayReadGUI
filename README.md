@@ -1,6 +1,6 @@
-# HDR Measurement GUI
+# HDR Display Read GUI
 
-HDR Measurement GUI is an app that allows you to measure HDR displays with ArgyllCMS
+HDR Display Read GUI is an app that allows you to measure HDR displays with ArgyllCMS
 
 You specify list of patches to measure, and HDR Display GUI guides you on how to setup your intsrument and runs the measurements using its own signal generator and ArgyllCMS's spotread to take measurements
 

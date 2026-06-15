@@ -1,3 +1,23 @@
+/*
+    HDR Display Read GUI
+    Copyright (C) 2026  Dmytro Bulatov
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    My contacts are on https://boolka.dev/
+*/
+
 #include "precompiled_header.h"
 
 #include "gui_window.h"
@@ -119,7 +139,7 @@ LRESULT GUIWindow::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
             m_LastError =
                 "Display configuration changed. This may have brought target display out of HDR "
                 "mode, made it blink, turned it off, etc.",
-            "HDR Measurement GUI Fatal Error";
+            "HDR Display Read GUI Fatal Error";
             m_SignalGenerator.Stop();
             m_MeasurementManagerInstrumentCheck.RestartAllMeasurements();
             m_MeasurementManagerActualMeasurements.RestartAllMeasurements();
@@ -140,7 +160,7 @@ LRESULT GUIWindow::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
         return 0;
     case WM_USER_GUI_WINDOW_SHOW_OPEN_SOURCE_LICENSES: {
         std::filesystem::path tempFilePath =
-            std::filesystem::temp_directory_path() / "HDRMeasurementGUI_OpenSourceLicenses.txt";
+            std::filesystem::temp_directory_path() / "HDRDisplayReadGUI_OpenSourceLicenses.txt";
         {
             std::ofstream tempFileStream(tempFilePath, std::ios::binary);
             MemoryBlock fileData = GetOpenSourceLicensesData();
@@ -218,7 +238,7 @@ void GUIWindow::RenderImGui()
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
 
-    ImGui::Begin("HDR Measurement GUI", nullptr,
+    ImGui::Begin("HDR Display Read GUI", nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
                      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
@@ -626,7 +646,7 @@ void GUIWindow::HandlePickPatchesFile()
     std::ifstream patchesCSV(selectedPath);
     if (!patchesCSV.is_open())
     {
-        MessageBoxW(GetHWND(), L"Failed to open selected file", L"HDR Measurement GUI Error",
+        MessageBoxW(GetHWND(), L"Failed to open selected file", L"HDR Display Read GUI Error",
                     MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
         return;
     }
@@ -655,7 +675,7 @@ void GUIWindow::HandlePickPatchesFile()
             HDR10G > 1023 || HDR10B > 1023)
         {
             std::string errorMessage = "Failed to parse string \"" + line + "\"";
-            MessageBoxA(GetHWND(), errorMessage.c_str(), "HDR Measurement GUI Error",
+            MessageBoxA(GetHWND(), errorMessage.c_str(), "HDR Display Read GUI Error",
                         MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
             return;
         }
@@ -922,7 +942,7 @@ bool GUIWindow::SaveMeasurements(std::filesystem::path outputPath)
 void GUIWindow::SaveSpotreadPath(const std::filesystem::path& spotreadPath)
 {
     std::filesystem::path saveFilePath =
-        std::filesystem::temp_directory_path() / "HDRMeasurementGUI_SpotreadPath.txt";
+        std::filesystem::temp_directory_path() / "HDRDisplayReadGUI_SpotreadPath.txt";
     std::wofstream saveFile(saveFilePath);
     saveFile << spotreadPath.wstring() << std::endl;
 }
@@ -930,7 +950,7 @@ void GUIWindow::SaveSpotreadPath(const std::filesystem::path& spotreadPath)
 std::filesystem::path GUIWindow::LoadSpotreadPath()
 {
     std::filesystem::path saveFilePath =
-        std::filesystem::temp_directory_path() / "HDRMeasurementGUI_SpotreadPath.txt";
+        std::filesystem::temp_directory_path() / "HDRDisplayReadGUI_SpotreadPath.txt";
     std::wifstream saveFile(saveFilePath);
     if (!saveFile.is_open())
     {

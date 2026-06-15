@@ -28,10 +28,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: RealFakeSDRDisplayInHDR - Debug
-        path: ./build/Debug/HDRMeasurementGUI.exe
+        path: ./build/Debug/HDRDisplayReadGUI.exe
       
     - name: Archive Release artifacts
       uses: actions/upload-artifact@v4
       with:
         name: RealFakeSDRDisplayInHDR - Release
-        path: ./build/Release/HDRMeasurementGUI.exe
+        path: ./build/Release/HDRDisplayReadGUI.exe

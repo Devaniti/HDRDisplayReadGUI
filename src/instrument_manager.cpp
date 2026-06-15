@@ -1,3 +1,23 @@
+/*
+    HDR Display Read GUI
+    Copyright (C) 2026  Dmytro Bulatov
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    My contacts are on https://boolka.dev/
+*/
+
 #include "precompiled_header.h"
 
 #include "instrument_manager.h"
@@ -234,5 +254,5 @@ std::filesystem::path InstrumentManager::GetLogFilePath()
     auto currentTime =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
     std::string timeString = std::format("{:%Y_%m_%d_%H_%M_%S}", currentTime);
-    return std::filesystem::temp_directory_path() / ("HDRMeasurementGUI_" + timeString + ".log");
+    return std::filesystem::temp_directory_path() / ("HDRDisplayReadGUI_" + timeString + ".log");
 }
